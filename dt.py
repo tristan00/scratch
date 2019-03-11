@@ -20,7 +20,8 @@ class Node():
         self.min_num_in_bin = min_num_in_bin
         self.id = str(uuid.uuid4())
         self.max_splits_to_consider = 10
-        self.mean_value = None
+        self.mean_value = self.data[self.target].mean()
+        self.error_value = None
 
 
     def split(self):
@@ -52,24 +53,26 @@ class Node():
 
             for i in self.data.columns:
                 if i != self.target:
-                    min_v = self.data[i].min()
-                    max_v = self.data[i].max()
-                    for _ in range(self.max_splits_to_consider):
 
-                        #add gradient??
+                    if len(set(self.data[i].values.tolist())) > self.max_splits_to_consider:
+                        split_pop = random.sample(list(set(self.data[i].values.tolist())), self.max_splits_to_consider)
+                    else:
+                        split_pop = list(set(self.data[i].values.tolist()))
+                    #
+                    # data_copy = data[[i, self.target]].copy()
+                    # data_copy[]
 
-                        split_v = random.uniform(min_v, max_v)
-
-                        v1 = np.sum(np.square(self.data[self.data[i] < split_v][self.target].mean() - self.data[self.data[i] < split_v][self.target]))
-                        v2 = np.sum(np.square(self.data[self.data[i] < split_v][self.target].mean() - self.data[self.data[i] >= split_v][self.target]))
-
+                    for split_v in split_pop:
+                        # v1 = np.sum(np.square(self.data[self.data[i] < split_v][self.target].mean() - self.data[self.data[i] < split_v][self.target]))
+                        # v2 = np.sum(np.square(self.data[self.data[i] < split_v][self.target].mean() - self.data[self.data[i] >= split_v][self.target]))
+                        v1 = np.std(self.data[self.data[i] < split_v][self.target].values)
+                        v2 = np.std(self.data[self.data[i] >= split_v][self.target].values)
                         if v1 + v2 < best_gain:
                             best_gain = v1 + v2
                             best_feature = i
                             best_split_value = split_v
 
 
-        self.mean_value = self.data[self.target].mean()
         if best_feature:
             self.split_feature = best_feature
             self.split_value = best_split_value
@@ -84,7 +87,7 @@ class Node():
 
 
     def predict(self, data_point):
-        if self.child_nodes and self.algorithm == 'id3_reg':
+        if self.child_nodes and self.algorithm in ['id3_reg', 'random_greedy']:
             if data_point[self.split_feature] < self.split_value:
                 return self.child_nodes[0].predict(data_point)
             else:
@@ -158,12 +161,12 @@ if __name__ == '__main__':
 
     train_df, val_df = train_test_split(data_df, train_size=.25, random_state=1)
     start_time = time.time()
-    t1 = DecisionTreeRegressor(max_depth=5, min_samples_leaf=2)
+    t1 = DecisionTreeRegressor(max_depth=3, min_samples_leaf=2)
     t1.fit(train_df.drop('target', axis=1), train_df['target'])
     print('t1 run time', time.time() - start_time)
 
     start_time = time.time()
-    t2 = Tree(train_df, max_depth=5)
+    t2 = Tree(train_df, max_depth=3)
     t2.fit()
     print('t2 run time', time.time() - start_time)
 
