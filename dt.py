@@ -37,7 +37,7 @@ class Node():
 
             for i in self.data.columns:
                 if i != self.target:
-                    split_v = self.data[i].mean()
+                    split_v = self.data[i].median()
                     std_1 = np.std(self.data[self.data[i] < split_v][self.target].values)
                     std_2 = np.std(self.data[self.data[i] >= split_v][self.target].values)
 
@@ -98,7 +98,7 @@ class Node():
 
 class Tree():
 
-    def __init__(self, data, algorithm = 'random_greedy', max_depth = 10, min_elements_in_bin = 1):
+    def __init__(self, data, algorithm = 'id3_reg', max_depth = 10, min_elements_in_bin = 1):
         self.algorithm = algorithm
         self.data = data
         self.root_node = Node(data, max_depth, algorithm=algorithm)
@@ -161,12 +161,12 @@ if __name__ == '__main__':
 
     train_df, val_df = train_test_split(data_df, train_size=.25, random_state=1)
     start_time = time.time()
-    t1 = DecisionTreeRegressor(max_depth=3, min_samples_leaf=2)
+    t1 = DecisionTreeRegressor(max_depth=4, min_samples_leaf=2)
     t1.fit(train_df.drop('target', axis=1), train_df['target'])
     print('t1 run time', time.time() - start_time)
 
     start_time = time.time()
-    t2 = Tree(train_df, max_depth=3)
+    t2 = Tree(train_df, max_depth=4)
     t2.fit()
     print('t2 run time', time.time() - start_time)
 
