@@ -4,6 +4,8 @@ from graphviz import Digraph
 import uuid
 from sklearn.metrics import mean_squared_error
 import random
+import functools
+import operator
 
 
 class Node():
@@ -37,7 +39,7 @@ class Node():
 
             for i in self.data.columns:
                 if i != self.target:
-                    split_v = self.data[i].median()
+                    split_v = self.data[i].mean()
                     std_1 = np.std(self.data[self.data[i] < split_v][self.target].values)
                     std_2 = np.std(self.data[self.data[i] >= split_v][self.target].values)
 
@@ -82,7 +84,7 @@ class Node():
                                          target = self.target, depth = self.depth + 1, algorithm=self.algorithm))
             self.child_nodes.append(Node(self.data[self.data[self.split_feature] >= self.split_value], self.max_depth,
                                          target = self.target, depth = self.depth + 1, algorithm=self.algorithm))
-            for i in  self.child_nodes:
+            for i in self.child_nodes:
                 i.split()
 
 
@@ -95,6 +97,9 @@ class Node():
 
         return self.mean_value
 
+    def get_all_children(self):
+        return functools.reduce(operator.add, [i.get_all_children() for i in self.child_nodes], [])
+
 
 class Tree():
 
@@ -103,9 +108,16 @@ class Tree():
         self.data = data
         self.root_node = Node(data, max_depth, algorithm=algorithm)
 
+        self.nodes = dict()
+
+        self.nodes[self.root_node.id] = self.root_node
+
 
     def fit(self):
         self.root_node.split()
+
+        for i in self.root_node.get_all_children():
+            self.nodes[i.id] = i
 
 
     def predict(self, data):
