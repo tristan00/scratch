@@ -31,49 +31,21 @@ class Node():
         best_feature = None
         best_split_value = None
 
-        if self.algorithm == 'id3_reg':
 
-            if self.min_num_in_bin > self.data.shape[0] or np.std(self.data[self.target].values) == 0.0 or self.depth >= self.max_depth:
-                return
+        if self.min_num_in_bin > self.data.shape[0] or np.std(self.data[self.target].values) == 0.0 or self.depth >= self.max_depth:
+            return
 
 
-            for i in self.data.columns:
-                if i != self.target:
-                    split_v = self.data[i].mean()
-                    std_1 = np.std(self.data[self.data[i] < split_v][self.target].values)
-                    std_2 = np.std(self.data[self.data[i] >= split_v][self.target].values)
+        for i in self.data.columns:
+            if i != self.target:
+                split_v = self.data[i].mean()
+                std_1 = np.std(self.data[self.data[i] < split_v][self.target].values)
+                std_2 = np.std(self.data[self.data[i] >= split_v][self.target].values)
 
-                    if std_1 + std_2 < best_gain:
-                        best_gain = std_1 + std_2
-                        best_feature = i
-                        best_split_value = split_v
-
-        elif self.algorithm == 'random_greedy':
-
-            if self.min_num_in_bin > self.data.shape[0] or np.std(self.data[self.target].values) == 0.0 or self.depth >= self.max_depth:
-                return
-
-            for i in self.data.columns:
-                if i != self.target:
-
-                    if len(set(self.data[i].values.tolist())) > self.max_splits_to_consider:
-                        split_pop = random.sample(list(set(self.data[i].values.tolist())), self.max_splits_to_consider)
-                    else:
-                        split_pop = list(set(self.data[i].values.tolist()))
-                    #
-                    # data_copy = data[[i, self.target]].copy()
-                    # data_copy[]
-
-                    for split_v in split_pop:
-                        # v1 = np.sum(np.square(self.data[self.data[i] < split_v][self.target].mean() - self.data[self.data[i] < split_v][self.target]))
-                        # v2 = np.sum(np.square(self.data[self.data[i] < split_v][self.target].mean() - self.data[self.data[i] >= split_v][self.target]))
-                        v1 = np.std(self.data[self.data[i] < split_v][self.target].values)
-                        v2 = np.std(self.data[self.data[i] >= split_v][self.target].values)
-                        if v1 + v2 < best_gain:
-                            best_gain = v1 + v2
-                            best_feature = i
-                            best_split_value = split_v
-
+                if std_1 + std_2 < best_gain:
+                    best_gain = std_1 + std_2
+                    best_feature = i
+                    best_split_value = split_v
 
         if best_feature:
             self.split_feature = best_feature
@@ -99,6 +71,12 @@ class Node():
 
     def get_all_children(self):
         return functools.reduce(operator.add, [i.get_all_children() for i in self.child_nodes], [])
+
+    def return_self_dict(self):
+        return {'n_id': self.id,
+                   'data_size':self.data.shape[0],
+                   'split_feature':self.split_feature,
+                   'split_value':self.split_value}
 
 
 class Tree():
@@ -158,6 +136,16 @@ class Tree():
 
             nodes = next_nodes
         return tree.source
+
+    def get_split_info(self):
+        splits = []
+
+
+        rn_info = self.root_node.return_self_dict()
+        splits.append(rn_info)
+
+
+
 
 
 if __name__ == '__main__':
