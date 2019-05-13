@@ -26,7 +26,6 @@ def get_data():
     for c, i in enumerate(files):
         if c % 1000 == 0 and c > 0:
             print(c, i)
-            break
         try:
             with open(i, 'r') as f:
                 j = json.load(f)
@@ -58,7 +57,7 @@ if __name__ == '__main__':
     documents = get_data()
     print(len(documents))
 
-    lsi = LSI()
+    lsi = LSI(num_of_topics = 10)
     lsi.fit(documents)
 
     print(evaluate_using_supervised(documents, lsi.predict(documents)))
