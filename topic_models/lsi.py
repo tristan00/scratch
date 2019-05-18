@@ -34,9 +34,6 @@ class LSI():
 
 
 
-lsi = LSI(num_of_topics = 5)
-lsi
-
 
 
 
